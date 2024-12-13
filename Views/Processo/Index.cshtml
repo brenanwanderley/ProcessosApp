@@ -1,0 +1,47 @@
+@model List<ProcessosApp.Models.Processo>
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+            <th scope="col">#</th>
+            <th scope="col">NPU</th>
+            <th scope="col">Data de Cadastro</th>
+            <th scope="col">UF</th>
+            <th scope="col">Opções</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var processo in Model)
+            {
+                <tr>
+                    <td>@processo.Id</td>
+                    <td>@processo.Npu</td>
+                    <td>@processo.DataCadastro</td>
+                    <td>@processo.EstadoSigla</td>
+                    <td>
+                        <a asp-asp-controller="Processo"
+                         asp-action="Edit"
+                          asp-route-id="@processo.Id"
+                           class="btn btn-warning btn-sm">Visualizar</a>
+                        <a 
+                            asp-asp-controller="Processo"
+                            asp-action="Delete"
+                            asp-route-id="@processo.Id"
+                            class="btn btn-danger btn-sm">Excluir
+                        </a>
+                    </td>
+                </tr>
+            }
+            
+        </tbody>
+    </table>
+}else{
+    <p>Nenhum Processo cadastrado.</p>
+}
+
+
+<a asp-controller="Processo" asp-action="Create" class="btn btn-primary">Cadastrar Processo</a>

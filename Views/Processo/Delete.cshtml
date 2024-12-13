@@ -1,0 +1,11 @@
+@model ProcessosApp.Models.Processo
+
+<h1>@ViewData["Title"]</h1>
+
+<p>Você confirma a exclusão do Processo @Model.NomeProcesso ? </p>
+
+<form method="POST">
+    <button class="btn btn-danger" type="submit">Excluir</button>
+    <a asp-asp-controller="Processo" asp-action="Index" class="btn btn-primary">Cancelar</a>
+
+</form>

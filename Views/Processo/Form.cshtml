@@ -1,0 +1,132 @@
+@model ProcessosApp.Models.Processo
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="POST">
+    <input type="hidden" asp-for="Id" id="processoId">
+    <div class="mb-3">
+        <label asp-for="NomeProcesso">Nome do Processo</label>
+        <input asp-for="NomeProcesso" class="form-control" required>
+        <span asp-validation-for="NomeProcesso" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Npu">NPU</label>
+        <input asp-for="Npu" class="form-control" id="numeroIdentificacao" maxlength="25" required>
+        <span asp-validation-for="Npu" class="text-danger"></span>
+    </div>
+
+    @if (Model != null && Model.Id != null)
+    {
+        <div class="mb-3">
+            <label asp-for="DataCadastro">Data de cadastro</label>
+            <input asp-for="DataCadastro" readonly="true" class="form-control">
+        </div>
+    }
+
+    @if (Model != null && Model.DataVisualizacao != null)
+    {
+        <div class="mb-3">
+            <label asp-for="DataVisualizacao">Data de Visualização</label>
+            <input asp-for="DataVisualizacao" readonly="true" class="form-control">
+        </div>
+    }
+
+    <!-- Combo de Estados -->
+    <div class="mb-3">
+        <label for="Estado">Estado</label>
+        <select id="Estado" class="form-control" asp-for="EstadoSigla" required>
+            <option value="">Selecione o Estado</option>
+            @foreach (var estado in ViewBag.Estados as SelectList)
+            {
+                <option value="@estado.Value">@estado.Text</option>
+            }
+        </select>
+        <span asp-validation-for="EstadoSigla" class="text-danger"></span>
+    </div>
+
+    <!-- Combo de Municípios -->
+    <div class="mb-3">
+        <label for="Municipio">Município</label>
+        <select id="Municipio" class="form-control" asp-for="MunicipioId" required>
+            <option value="">Selecione o Município</option>
+            @foreach (var municipio in ViewBag.Municipios as SelectList)
+            {
+                <option value="@municipio.Value">@municipio.Text</option>
+            }
+        </select>
+        <span asp-validation-for="MunicipioId" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Salvar</button>
+    
+    @if (Model != null && Model.DataVisualizacao == null)
+    {
+        <button type="button" id="confirmarVisualizacao" class="btn btn-success">Confirmar Visualização</button>
+    }
+    
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='/Processo/Index';">Voltar</button>
+
+</form>
+
+@section Scripts {
+    <script>
+        // Atualiza os municípios quando o estado for alterado
+        $('#Estado').change(function () {
+            var siglaEstado = $(this).val();
+            if (siglaEstado) {
+                $.get('/Processo/GetMunicipiosPorEstado', { siglaEstado: siglaEstado }, function (municipios) {
+                    var municipioSelect = $('#Municipio');
+                    municipioSelect.empty();
+                    municipioSelect.append('<option value="">Selecione o Município</option>');
+                    municipios.forEach(function (municipio) {
+                        municipioSelect.append('<option value="' + municipio.id + '">' + municipio.nome + '</option>');
+                    });
+                });
+            }
+            else {
+                $('#Municipio').empty().append('<option value="">Selecione o Município</option>');
+            }
+        });
+
+        $(document).ready(function () {
+            $('#numeroIdentificacao').on('input', function () {
+                var value = $(this).val().replace(/\D/g, ''); // Remove tudo que não for número
+
+                // Aplica a formatação usando a nova regex
+                var formattedValue = value.replace(
+                    /(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})(\d{2})/,
+                    '$1-$2.$3.$4.$5.$6.$7'
+                );
+
+                // Limita o tamanho da entrada para 25 caracteres (incluindo os símbolos)
+                $(this).val(formattedValue.substring(0, 25));
+            });
+        });
+
+
+        $(document).ready(function () {
+            $('#confirmarVisualizacao').click(function () {
+                var processoId = $('#processoId').val();
+                if (!processoId) {
+                    alert("Id do processo não encontrado.");
+                    return;
+                }
+
+                $.post('/Processo/ConfirmarVisualizacao', { id: processoId })
+                    .done(function (response) {
+                        if (response.success) {
+                            alert("Visualização confirmada com sucesso!");
+                            location.reload(); // Recarrega a página para refletir as mudanças
+                        } else {
+                            alert("Falha ao confirmar visualização.");
+                        }
+                    })
+                    .fail(function () {
+                        alert("Erro ao comunicar com o servidor.");
+                    });
+            });
+        });
+
+    </script>
+}
